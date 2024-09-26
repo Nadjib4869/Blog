@@ -5,6 +5,8 @@ import Blog from "./pages/blog";
 import SignUp from "./pages/signup";
 import Login from "./pages/login";
 import FilteredBlogs from "./pages/filteredBlogs";
+import WritePage from "./pages/writePage";
+import Dashboard from "./pages/dashboard";
 import Contact from "./pages/contact";
 import NoPage from "./pages/noPage";
 
@@ -18,6 +20,8 @@ function App() {
           <Route path="filtered-blogs" element={<FilteredBlogs />} />
           <Route path="signup" element={<SignUp />} />
           <Route path="login" element={<Login />} />
+          <Route path="write-page" element={<WritePage />} />
+          <Route path="dashboard" element={<Dashboard />} />
           <Route path="contact" element={<Contact />} />
           <Route path="*" element={<NoPage />} />
         </Route>

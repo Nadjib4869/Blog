@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Outlet, Link } from "react-router-dom";
 import { IoMoon, IoSunny } from "react-icons/io5";
 
-export default function navbar() {
+export default function Navbar() {
   const [dark, setDark] = useState(false);
 
   const darkModeHandler = () => {
@@ -38,6 +38,15 @@ export default function navbar() {
             </li>
             <li>
               <Link to="/login">Log In</Link>
+            </li>
+            <li>
+              <Link to="/write-page">Write</Link>
+            </li>
+            <li>
+              <Link to="/dashboard">Dashboard</Link>
+            </li>
+            <li>
+              <Link to="/logout">Logout</Link>
             </li>
             {/* { token ? (
               <>

@@ -27,7 +27,7 @@ export default function blog() {
           <img src={Post} className="h-[280px] w-[480px]" alt="blog-photo" />
         </div>
       </section>
-      <section className="flex justify-between mb-12 px-7 mt-7 space-x-7">
+      <section className="flex justify-between px-20 mb-12 space-x-10 mt-7">
         <article className="w-2/3 space-y-7">
           <p className="text-wrap">
             Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quia,

@@ -2,13 +2,16 @@ import Hero from "../components/hero";
 import Footer from "../components/footer";
 import Blogs from "../components/blogs";
 import { Link } from "react-router-dom";
+import { useRef } from "react";
 
-function home() {
+export default function Home() {
+  const nextSectionRef = useRef<HTMLElement>(null);
+
   return (
     <div className="h-full bg-red-500">
-      <Hero />
+      <Hero nextSectionRef={nextSectionRef} />
       <div className="w-full bg-blue-500 h-fit">
-        <section className="space-y-5 mb-7 px-28">
+        <section ref={nextSectionRef} className="mt-5 space-y-5 mb-7 px-28">
           <h2>Popular Categories</h2>
           <ul className="flex space-x-5 text-sm">
             <li className="flex items-center justify-center w-20 h-10 bg-yellow-300 rounded-lg cursor-pointer">
@@ -35,4 +38,4 @@ function home() {
   );
 }
 
-export default home;
+
