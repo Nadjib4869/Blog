@@ -8,10 +8,15 @@ const router = express.Router();
 router
   .route("/")
   .get(postController.getAllPosts)
-  .post(authController.protect, postController.createPost);
+  .post(
+    authController.protect,
+    postController.uploadPostImages,
+    postController.resizePostImages,
+    postController.createPost
+  );
 
 //? Some Protected Routes
-router.route("/user/:userId").get(postController.getPostsByUser);
+//router.route("/user/:userId").get(postController.getPostsByUser);
 
 router
   .route("/my-posts")
@@ -26,6 +31,7 @@ router
   .get(postController.getPost)
   .patch(
     authController.protect,
+    authController.setPost,
     authController.isPostCreator,
     postController.uploadPostImages,
     postController.resizePostImages,
@@ -33,6 +39,7 @@ router
   )
   .delete(
     authController.protect,
+    authController.setPost,
     authController.isPostCreator,
     postController.deletePost
   );

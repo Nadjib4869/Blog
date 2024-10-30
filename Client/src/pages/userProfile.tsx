@@ -1,11 +1,9 @@
-import { Link } from "react-router-dom";
-import Post from "../../public/img/posts/post.jpg";
-import { useQuery } from "react-query";
-import { useAuth } from "../context/authContext";
+import { useParams, Link } from "react-router-dom";
 import axiosInstance from "../api/axiosInstance";
+import { useQuery } from "react-query";
 
 interface Post {
-  id: number;
+  id: string;
   title: string;
   description: string;
   createdAt: string;
@@ -13,33 +11,34 @@ interface Post {
   imageCover: string;
 }
 
-export default function Dashboard() {
-  const { user, loading } = useAuth();
+interface UserData {
+  id: string;
+  name: string;
+  photo: string;
+  email: string;
+  createdAt: string;
+  posts: Post[];
+}
 
-  const getPosts = async (): Promise<Post[]> => {
-    try {
-      const res = await axiosInstance.get("/posts/my-posts");
-      return res.data.data.data;
-    } catch (err) {
-      console.error("error fetching posts", err);
-      return [];
-    }
+export default function UserProfile() {
+  const { userId } = useParams<{ userId: string }>();
+
+  const getUserAndPosts = async (): Promise<UserData> => {
+    const res = await axiosInstance.get(`/users/${userId}`);
+    return res.data.data.doc; // Adjust based on your API response structure
   };
 
-  const { isLoading, isError, data, error } = useQuery<Post[]>(
-    "posts",
-    getPosts,
-    {
-      enabled: !loading && !!user,
-    }
+  const { isLoading, isError, data, error } = useQuery<UserData>(
+    ["user&posts", userId],
+    getUserAndPosts
   );
 
-  if (loading || isLoading) {
-    return <span>Loading...</span>;
+  if (isLoading) {
+    return <div>Loading...</div>;
   }
 
   if (isError) {
-    return <span>Error: {(error as Error).message}</span>;
+    return <div>Error: {(error as Error).message}</div>;
   }
 
   return (
@@ -51,7 +50,7 @@ export default function Dashboard() {
         <hr />
         <div className="w-11/12 mt-8 bg-green-500 space-y-7">
           <div className="space-y-10 blogs">
-            {data?.map((post) => (
+            {data?.posts.map((post) => (
               <div key={post.id} className="flex space-x-10 blog">
                 <img
                   src={`http://localhost:8000/img/posts/${post.imageCover}`}
@@ -78,31 +77,11 @@ export default function Dashboard() {
                 </div>
               </div>
             ))}{" "}
-            {(!data || data.length === 0) && (
+            {(!data || data.posts.length === 0) && (
               <div className="">No Published blogs, yet...</div>
             )}
-            {/*<div className="flex space-x-10 blog">
-              <img
-                src={Post}
-                className="h-[250px] w-[350px]"
-                alt="blog-photo"
-              />
-              <div className="flex flex-col items-start justify-center space-y-5">
-                <p className="text-xs">
-                  2024-10-08 - <span className="text-red-700">CODING</span>
-                </p>
-                <h2>Easiest Way for React State Management</h2>
-                <p className="text-xs">
-                  Lorem, ipsum dolor sit amet consectetur adipisicing elit. Iure
-                  at sed veritatis minima
-                </p>
-                <button className="text-xs underline underline-offset-4">
-                  <Link to="/blog">Read More</Link>
-                </button>
-              </div>
-            </div>*/}
           </div>
-          {data && data.length !== 0 && (
+          {data && data.posts.length !== 0 && (
             <div className="flex justify-between w-full px-4">
               <button className="w-20 h-8 text-sm rounded-md bg-fuchsia-500">
                 Previous
@@ -116,18 +95,15 @@ export default function Dashboard() {
       </div>
       <div className="flex flex-col items-start mt-16">
         <img
-          src={user ? `http://localhost:8000/img/users/${user.user.photo}` : ""}
+          src={data ? `http://localhost:8000/img/users/${data.photo}` : ""}
           className="h-20 rounded-full"
           alt="User-photo"
         />
         <div className="mt-2 space-y-2">
           <h2>@Tag</h2>
-          <p>{user.user.name}</p>
+          <p>{data?.name}</p>
           <p>X Blogs - Y Reads</p>
         </div>
-        <button className="px-2 py-1 mt-8 bg-red-600 rounded-lg">
-          <Link to="/editProfile">Edit Profile</Link>
-        </button>
         <div className="space-y-4">
           <p className="mt-8">Description</p>
           <div>Socials</div>

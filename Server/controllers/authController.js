@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const { promisify } = require("util");
 const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
+const Post = require("../models/postModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const Email = require("../utils/email");
@@ -20,12 +21,17 @@ const createSendToken = (user, statusCode, res) => {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
-    secure: true,
+    secure: process.env.NODE_ENV === "production",
     httpOnly: true,
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "Lax", //? to prevent CSRF attacks
   };
   if (process.env.NODE_ENV === "development") cookieOptions.secure = false;
 
+  console.log("Setting cookie with options:", cookieOptions); // Debugging log
+
   res.cookie("jwt", token, cookieOptions);
+
+  console.log("Cookie set:", res.getHeader("Set-Cookie")); // Debugging log
 
   //? Remove password from output (without save)
   user.password = undefined;
@@ -77,7 +83,12 @@ exports.logOut = (req, res) => {
   res.cookie("jwt", "loggedout", {
     expires: new Date(Date.now() + 10 * 1000), // 10s
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "Lax", //? to prevent CSRF attacks
   });
+
+  console.log("Logout cookie set:", req.cookies.jwt); // Debugging log
+
   res.status(200).json({ status: "success" });
 };
 
@@ -93,7 +104,7 @@ exports.protect = catchAsync(async (req, res, next) => {
     token = req.cookies.jwt;
   }
 
-  if (!token) {
+  if (!token || token === "loggedout") {
     return next(
       new AppError("You're not logged in! Please log in to get access.", 401)
     );
@@ -121,12 +132,29 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   //* GRANT ACCESS TO PROTECTED ROUTE
   req.user = currentUser; // so we can use it again in another middleware
+  console.log(req.post);
+  next();
+});
+
+//? Middleware to set req.post
+exports.setPost = catchAsync(async (req, res, next) => {
+  const postId = req.params.id;
+  if (!postId) {
+    return next(new AppError("Post ID is required", 400));
+  }
+
+  const post = await Post.findById(postId);
+  if (!post) {
+    return next(new AppError("Post not found", 404));
+  }
+
+  req.post = post;
   next();
 });
 
 //? Check if the current user is the creator of the post
 exports.isPostCreator = catchAsync(async (req, res, next) => {
-  if (req.user !== req.post.user) {
+  if (req.user !== req.post.user && req.user.role !== "admin") {
     return next(
       new AppError(
         "You are not the post creator! You can't modify the post",

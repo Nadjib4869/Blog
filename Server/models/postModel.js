@@ -19,9 +19,33 @@ const postSchema = new mongoose.Schema(
       ],
     },
     slug: String,
+    category: {
+      type: String,
+      required: [true, "A post must have a category"],
+      enum: {
+        values: ["coding", "job", "travel", "learning"],
+        message: "Category is either: coding, job, travel, learning",
+      },
+    },
+    description: {
+      type: String,
+      required: [true, "A post must have a description"],
+      maxlength: [
+        40,
+        "A post description must have less or equal then 40 characters",
+      ],
+      minlength: [
+        10,
+        "A post description must have more or equal then 10 characters",
+      ],
+    },
     content: {
       type: String,
       required: [true, "A post must have a content"],
+      maxlength: [
+        1000,
+        "A post content must have less or equal then 1000 characters",
+      ],
       minlength: [
         100,
         "A post content must have more or equal then 100 characters",
@@ -62,6 +86,13 @@ postSchema.pre("save", function (next) {
 //? QUERY MIDDLEWARE
 postSchema.pre(/^find/, function (next) {
   this.populate("user");
+  next();
+});
+
+postSchema.post("save", async function (doc, next) {
+  await mongoose.model("User").findByIdAndUpdate(doc.user, {
+    $push: { posts: doc._id },
+  });
   next();
 });
 

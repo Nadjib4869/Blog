@@ -25,7 +25,7 @@ exports.updateOne = (Model) =>
       runValidators: true, //? to run the validators again
     });
 
-    //! if (Id is valid but no tour found for it) tour == null == false
+    //! if (Id is valid but no post found for it) post == null == false
     if (!doc) {
       return next(new AppError("No document found with that ID", 404));
     }
@@ -41,16 +41,17 @@ exports.updateOne = (Model) =>
 exports.createOne = (Model) =>
   catchAsync(async (req, res, next) => {
     // create a doc then calling the save method on the new doc
-    // const newTour = new Tour({}); //* Here newTour is Tour.prototype (instance of Tour model)
-    // newTour.save();
+    // const newPost = new Post({}); //* Here newPost is Post.prototype (instance of Post model)
+    // newPost.save();
 
-    // calling the create method directly on the Tour model
+    // calling the create method directly on the Post model
+    req.body.user = req.user.id; //? to set the user who is creating the post
     const newDoc = await Model.create(req.body);
 
     res.status(201).json({
       status: "success",
       data: {
-        tour: newDoc, //? to send the newly created obj as a respond (Classic thing we doing a post)
+        post: newDoc, //? to send the newly created obj as a respond (Classic thing we doing a post)
       },
     });
   });

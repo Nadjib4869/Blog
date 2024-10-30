@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
 const globalErrorHandler = require("./controllers/errorController");
@@ -9,6 +10,13 @@ const postRouter = require("./routes/postRoutes");
 
 const app = express();
 
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Your frontend URL
+    credentials: true, // Allow cookies and authorization headers
+  })
+);
+
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
@@ -18,6 +26,8 @@ app.use(express.json({ limit: "10kb" }));
 
 //? Cookie Parser, reading data from cookies
 app.use(cookieParser());
+
+app.use(express.static("public"));
 
 // app.get("/", (req, res) => {
 //   res.status(200).json({ message: "Hello from the server side!", app: "blog" });

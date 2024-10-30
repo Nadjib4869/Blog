@@ -1,6 +1,7 @@
 const express = require("express");
 const userController = require("./../controllers/userController");
 const authController = require("./../controllers/authController");
+const postController = require("./../controllers/postController");
 
 const router = express.Router();
 
@@ -11,6 +12,8 @@ router.get("/logout", authController.logOut);
 
 router.post("/forgotPassword", authController.forgotPassword);
 router.patch("/resetPassword/:string", authController.resetPassword);
+
+router.get("/:id", userController.getUser, postController.getPostsByUser);
 
 //? Protected Routes : All routes after this middleware are protected
 router.use(authController.protect);

@@ -1,35 +1,107 @@
+import { useParams, Link } from "react-router-dom";
 import Post from "../../public/img/posts/post.jpg";
 import UserPhoto from "../../public/img/users/user-1.jpeg";
+import Aside from "../components/aside";
+import { useQuery } from "react-query";
+import axiosInstance from "../api/axiosInstance";
 
-export default function blog() {
+interface User {
+  name: string;
+  photo: string;
+}
+interface Post {
+  id: number;
+  title: string;
+  description: string;
+  createdAt: string;
+  category: string;
+  imageCover: string;
+  user: User;
+  content: string;
+}
+
+const getPost = async (postId: string): Promise<Post> => {
+  const res = await axiosInstance.get(`/posts/${postId}`);
+  return res.data.data.doc;
+};
+
+export default function Blog() {
+  const { postId } = useParams<{ postId: string }>();
+  const { isLoading, isError, data, error } = useQuery<Post>(
+    ["post", postId],
+    () =>
+      postId ? getPost(postId) : Promise.reject(new Error("Invalid post ID"))
+  );
+
+  console.log(data);
+
+  if (isLoading) {
+    return <span>Loading...</span>;
+  }
+
+  if (isError) {
+    return <span>Error: {(error as Error).message}</span>;
+  }
+
   return (
-    <div className="bg-red-500">
-      <section className="flex items-center justify-center bg-blue-600">
-        <div className="w-2/5 space-y-8 bg-green-500">
+    <div className="">
+      <section className="flex items-center justify-center">
+        <div className="w-2/5 space-y-8">
           <h1 className="text-5xl font-bold leading-tight">
-            Easiest Way for React State Management
+            {data ? data.title : ""}
           </h1>
-          <div className="flex items-center space-x-4">
-            <img
-              src={UserPhoto}
-              className="rounded-full w-14 h-14"
-              alt="User-photo"
-            />
-            <div className="text-xs">
-              <h3>
-                <strong>Joseph Owen</strong>
-              </h3>
-              <p>08.10.2024</p>
-            </div>
+          <div>
+            <Link to={`/users/${data?.user?._id}`} className="flex items-center space-x-4">
+              <img
+                src={
+                  data && data.user
+                    ? `http://localhost:8000/img/users/${data.user.photo}`
+                    : ""
+                }
+                className="rounded-full w-14 h-14"
+                alt="User-photo"
+              />
+              <div className="text-xs">
+                <h3>
+                  <strong>
+                    {data && data.user
+                      ? data.user.name
+                          .split(" ")
+                          .map(
+                            (word) =>
+                              word.charAt(0).toUpperCase() + word.slice(1)
+                          )
+                          .join(" ")
+                      : ""}
+                  </strong>
+                </h3>
+                <p>
+                  {data
+                    ? new Date(data.createdAt).toLocaleString("en-us", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : ""}
+                </p>
+              </div>
+            </Link>
           </div>
         </div>
         <div>
-          <img src={Post} className="h-[280px] w-[480px]" alt="blog-photo" />
+          <img
+            src={
+              data ? `http://localhost:8000/img/posts/${data.imageCover}` : ""
+            }
+            className="h-[280px] w-[480px]"
+            alt="blog-photo"
+          />
         </div>
       </section>
       <section className="flex justify-between px-20 mb-12 space-x-10 mt-7">
         <article className="w-2/3 space-y-7">
           <p className="text-wrap">
+            {data ? data.content : ""}
             Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quia,
             consequatur accusantium fugiat quas distinctio voluptatibus
             aspernatur non autem, minima aut et vel molestiae tempore iusto ut
@@ -160,143 +232,7 @@ export default function blog() {
             </div>
           </div>
         </article>
-        <aside className="flex flex-col w-1/3 space-y-7 bg-slate-300">
-          <div>
-            <p className="text-xs">What's hot</p>
-            <h2>Most Popular</h2>
-            <section className="mt-3 space-y-5 bg-slate-500">
-              <div className="space-y-1">
-                <button className="w-11 h-5 text-xs bg-red-500 rounded-lg text-[11px] text-slate-200">
-                  Travel
-                </button>
-                <h3 className="text-[15px] font-semibold leading-tight">
-                  A Journey Through Bohemian Beauty: Exploring the Streets of
-                  Prague
-                </h3>
-                <p className="text-[11px]">
-                  <strong>Joseph Owen</strong> - 08.10.2024
-                </p>
-              </div>
-              <div className="space-y-1">
-                <button className="w-11 h-5 text-xs bg-red-500 rounded-lg text-[11px] text-slate-200">
-                  Travel
-                </button>
-                <h3 className="text-[15px] font-semibold leading-tight">
-                  A Journey Through Bohemian Beauty: Exploring the Streets of
-                  Prague
-                </h3>
-                <p className="text-[11px]">
-                  <strong>Joseph Owen</strong> - 08.10.2024
-                </p>
-              </div>
-              <div className="space-y-1">
-                <button className="w-11 h-5 text-xs bg-red-500 rounded-lg text-[11px] text-slate-200">
-                  Travel
-                </button>
-                <h3 className="text-[15px] font-semibold leading-tight">
-                  A Journey Through Bohemian Beauty: Exploring the Streets of
-                  Prague
-                </h3>
-                <p className="text-[11px]">
-                  <strong>Joseph Owen</strong> - 08.10.2024
-                </p>
-              </div>
-            </section>
-          </div>
-          <div>
-            <p className="text-xs">Discover by topic</p>
-            <h2>Categories</h2>
-            <div className="grid grid-cols-4 gap-2 mt-3 bg-blue-800 w-72">
-              <button className="w-16 text-sm bg-red-500 rounded-lg h-7">
-                Coding
-              </button>
-              <button className="w-16 text-sm bg-red-500 rounded-lg h-7">
-                Job
-              </button>
-              <button className="w-16 text-sm bg-red-500 rounded-lg h-7">
-                Travel
-              </button>
-              <button className="w-16 text-sm bg-red-500 rounded-lg h-7">
-                Culture
-              </button>
-              <button className="w-16 text-sm bg-red-500 rounded-lg h-7">
-                Learning
-              </button>
-              <button className="w-16 text-sm bg-red-500 rounded-lg h-7">
-                Learning
-              </button>
-            </div>
-          </div>
-          <div>
-            <p className="text-xs">Chosen by the editor</p>
-            <h2>Editors Pick</h2>
-            <section className="mt-3 space-y-5 bg-slate-400">
-              <div className="flex items-center justify-center space-x-2">
-                <div>
-                  <img
-                    src={UserPhoto}
-                    className="w-[72px] border-2 rounded-full h-14"
-                    alt="User-photo"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <button className="w-11 h-5 text-xs bg-red-500 rounded-lg text-[11px] text-slate-200">
-                    Travel
-                  </button>
-                  <h3 className="text-[15px] font-semibold leading-tight">
-                    A Journey Through Bohemian Beauty: Exploring the Streets of
-                    Prague
-                  </h3>
-                  <p className="text-[11px]">
-                    <strong>Joseph Owen</strong> - 08.10.2024
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center justify-center space-x-2">
-                <div>
-                  <img
-                    src={UserPhoto}
-                    className="w-[72px] border-2 rounded-full h-14"
-                    alt="User-photo"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <button className="w-11 h-5 text-xs bg-red-500 rounded-lg text-[11px] text-slate-200">
-                    Travel
-                  </button>
-                  <h3 className="text-[15px] font-semibold leading-tight">
-                    A Journey Through Bohemian Beauty: Exploring the Streets of
-                    Prague
-                  </h3>
-                  <p className="text-[11px]">
-                    <strong>Joseph Owen</strong> - 08.10.2024
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center justify-center space-x-2">
-                <div>
-                  <img
-                    src={UserPhoto}
-                    className="w-[72px] border-2 rounded-full h-14"
-                    alt="User-photo"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <button className="w-11 h-5 text-xs bg-red-500 rounded-lg text-[11px] text-slate-200">
-                    Travel
-                  </button>
-                  <h3 className="text-[15px] font-semibold leading-tight">
-                    A Journey Through Bohemian Beauty: Exploring the Streets of
-                    Prague
-                  </h3>
-                  <p className="text-[11px]">
-                    <strong>Joseph Owen</strong> - 08.10.2024
-                  </p>
-                </div>
-              </div>
-            </section>
-          </div>
-        </aside>
+        <Aside />
       </section>
     </div>
   );
